@@ -2,25 +2,33 @@
 local Spark = exports['spark']
 
 local Players, Functions = {}, {}
-local Development = {}
+local Development = {} -- The development resource
 
-function Development:invoke()
+--- Invoke all the callback functions
+function Development:invokeFunctions()
     for _, v in pairs(Functions) do
         pcall(v)
     end
 end
 
+--- Listen to the Spark restart event
+--- @param callback fun()
+function Development:listen(callback)
+    table.insert(Functions, callback)
+end
+
+--- When Spark gets started
 --- @param name string
 function Development:onResourceStart(name)
     if name ~= "spark" then -- If it isn't Spark that started
         return
     end
 
-    self:invoke()
+    self:invokeFunctions() -- Notify all the event listeners
 
-    for steam, data in pairs(Players) do -- Loop all old users
-        if data.spawns > 0 then
-            local coords = GetEntityCoords(GetPlayerPed(data.source))
+    for steam, data in pairs(Players) do -- Loop all the current players
+        if data.spawns > 0 then -- Has the player spawned atleast once
+            local coords = GetEntityCoords(GetPlayerPed(data.source)) -- Save basic information
             data.data['Coords'] = {x = coords.x, y = coords.y, z = coords.z}
             data.data['Health'] = GetEntityHealth(GetPlayerPed(data.source))
         end
@@ -30,18 +38,14 @@ function Development:onResourceStart(name)
     end
 end
 
+--- When Spark gets closed
 --- @param name string
 function Development:onResourceStop(name)
     if name ~= "spark" then -- If it isn't Spark that stopped
         return
     end
 
-    Players = exports['spark']:getRawPlayers()
-end
-
---- @param callback fun()
-function Development:listen(callback)
-    table.insert(Functions, callback)
+    Players = Spark:getRawPlayers() -- Update the players database
 end
 
 exports('listen', function(callback)
