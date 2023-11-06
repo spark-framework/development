@@ -1,4 +1,4 @@
-# development
+# 🔨 Development
 A tool that can be utilized for developing on Spark while your resources are in use!
 
 ## 📚 Documentation
